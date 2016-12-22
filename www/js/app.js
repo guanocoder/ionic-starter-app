@@ -50,7 +50,7 @@ angular.module('ionicStarterApp',
   })
 
   .state('app.stock', {
-    url: '/:stockTicker',
+    url: '/:ticker',
     views: {
       'menuContent': {
         templateUrl: 'templates/stock.html',

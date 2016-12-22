@@ -41,17 +41,23 @@ angular.module('ionicStarterApp.controllers', [])
   };
 })
 
-.controller('myStocksController', function($scope) {
-  $scope.playlists = [
-    { title: 'Reggae', id: 1 },
-    { title: 'Chill', id: 2 },
-    { title: 'Dubstep', id: 3 },
-    { title: 'Indie', id: 4 },
-    { title: 'Rap', id: 5 },
-    { title: 'Cowbell', id: 6 }
+.controller('myStocksController', ["$scope", function($scope) {
+  $scope.myStocks = [
+    { ticker: 'AAPL' },
+    { ticker: 'GPRO' },
+    { ticker: 'FB' },
+    { ticker: 'NFLX' },
+    { ticker: 'TSLA' },
+    { ticker: 'BRK-A' },
+    { ticker: 'INTC' },
+    { ticker: 'MSFT' },
+    { ticker: 'GE' },
+    { ticker: 'BAC' },
+    { ticker: 'C' },
+    { ticker: 'T' },
   ];
-})
+}])
 
-.controller('stockController', function($scope, $stateParams) {
-  $scope.stockTicker = $stateParams.stockTicker;
-});
+.controller('stockController', ["$scope", "$stateParams", function($scope, $stateParams) {
+  $scope.ticker = $stateParams.ticker;
+}]);
