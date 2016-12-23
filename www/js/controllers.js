@@ -58,6 +58,19 @@ angular.module('ionicStarterApp.controllers', [])
   ];
 }])
 
-.controller('stockController', ["$scope", "$stateParams", function($scope, $stateParams) {
+.controller('stockController', ["$scope", "$stateParams", "$http", "stockDataService", function($scope, $stateParams, $http, stockDataService) {
   $scope.ticker = $stateParams.ticker;
+
+  // Service call with ngResource
+  $scope.finData = stockDataService.getStockData($scope.ticker);
+  $scope.finData.$promise.then(function (data) {
+     console.log(data.query.results.quote);
+  });
+
+  // Some wacko tucked up promise arsward calls
+  // var promise = stockDataService.getStockData($scope.ticker);
+  // promise.then(function(data) {
+  //   console.log(data);
+  // });
+  
 }]);
