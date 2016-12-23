@@ -58,19 +58,34 @@ angular.module('ionicStarterApp.controllers', [])
   ];
 }])
 
-.controller('stockController', ["$scope", "$stateParams", "$http", "stockDataService", function($scope, $stateParams, $http, stockDataService) {
+.controller('stockController', ["$scope", "$stateParams", "stockDataService", function($scope, $stateParams, stockDataService) {
   $scope.ticker = $stateParams.ticker;
 
   // Service call with ngResource
-  $scope.finData = stockDataService.getStockData($scope.ticker);
-  $scope.finData.$promise.then(function (data) {
-     console.log(data.query.results.quote);
+  // $scope.finData = stockDataService.getStockData($scope.ticker);
+  // $scope.finData.$promise.then(function (data) {
+  //    console.log(data.query.results.quote);
+  // });
+
+  $scope.$on("$ionicView.afterEnter", function() {
+    getPriceData();
+    getDetailedData();
   });
 
-  // Some wacko tucked up promise arsward calls
-  // var promise = stockDataService.getStockData($scope.ticker);
-  // promise.then(function(data) {
-  //   console.log(data);
-  // });
+  function getPriceData() {
+    // Some wacko tucked up promise arsward calls
+    var promise = stockDataService.getPriceData($scope.ticker);
+    promise.then(function(data) {
+      console.log(data);
+    });
+  }
+
+  function getDetailedData() {
+    // Some wacko tucked up promise arsward calls
+    var promise = stockDataService.getDetailedData($scope.ticker);
+    promise.then(function(data) {
+      console.log(data);
+    });
+  }
   
 }]);

@@ -11,7 +11,7 @@ angular.module('ionicStarterApp',
     'ionicStarterApp.services',
     'ionicStarterApp.filters',
     'ionicStarterApp.directives',
-    'ngResource'
+    //'ngResource'
   ])
 
 .run(function($ionicPlatform) {
