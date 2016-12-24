@@ -60,12 +60,17 @@ angular.module('ionicStarterApp.controllers', [])
 
 .controller('stockController', ["$scope", "$stateParams", "stockDataService", function($scope, $stateParams, stockDataService) {
   $scope.ticker = $stateParams.ticker;
+  $scope.chartView = 1;
 
   // Service call with ngResource
   // $scope.finData = stockDataService.getStockData($scope.ticker);
   // $scope.finData.$promise.then(function (data) {
   //    console.log(data.query.results.quote);
   // });
+
+  $scope.chartViewFunc = function(chartIndex) {
+    $scope.chartView = chartIndex;
+  }
 
   $scope.$on("$ionicView.afterEnter", function() {
     getPriceData();
@@ -77,6 +82,7 @@ angular.module('ionicStarterApp.controllers', [])
     var promise = stockDataService.getPriceData($scope.ticker);
     promise.then(function(data) {
       console.log(data);
+      $scope.stockPriceData = data;
     });
   }
 
@@ -85,6 +91,7 @@ angular.module('ionicStarterApp.controllers', [])
     var promise = stockDataService.getDetailedData($scope.ticker);
     promise.then(function(data) {
       console.log(data);
+      $scope.stockDetailedData = data;
     });
   }
   
