@@ -13,12 +13,34 @@ angular.module("ionicStarterApp.services", [])
 //     };
 // }])
 
-// some crazy shit from author of tutorial, fuk it! 
-.factory("stockDataService", function($q, $http) {
+.factory("encodeURIService", function() {
+    return {
+        encode: function(string) {
+            return encodeURIComponent(string).replace(/\"/g, "%22").replace(/\ /g, "%20").replace(/[!'()]/g, escape)
+        }
+    }
+})
+.factory("dateService", function($filter) {
+    var currentDate = function() {
+        return $filter('date')(new Date(), 'yyyy-MM-dd');
+    };
+
+    var oneYearAgoDate = function() {
+        return $filter('date')(new Date(new Date().setDate(new Date().getDate() - 365)), 'yyyy-MM-dd');
+    };
+
+    return {
+        currentDate: currentDate,
+        oneYearAgoDate: oneYearAgoDate,
+    }
+})
+.factory("stockDataService", function($q, $http, encodeURIService) {
 
     var getDetailedData = function(ticker) {
         var deferred = $q.defer();
-        var yahooApiUrl = `http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20IN%20(%22${ticker}%22)&format=json&env=http://datatables.org/alltables.env`;
+        //var yahooApiUrl = `http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20IN%20(%22${ticker}%22)&format=json&env=http://datatables.org/alltables.env`;
+        var query = `select * from yahoo.finance.quotes where symbol IN ("${ticker}")`;
+        var yahooApiUrl = `http://query.yahooapis.com/v1/public/yql?q=${encodeURIService.encode(query)}&format=json&env=http://datatables.org/alltables.env`;
         $http.get(yahooApiUrl)
             .success(json => {
                 var jsonData = json.query.results.quote;

@@ -58,7 +58,7 @@ angular.module('ionicStarterApp.controllers', [])
   ];
 }])
 
-.controller('stockController', ["$scope", "$stateParams", "stockDataService", function($scope, $stateParams, stockDataService) {
+.controller('stockController', ["$scope", "$stateParams", "stockDataService", "dateService", function($scope, $stateParams, stockDataService, dateService) {
   $scope.ticker = $stateParams.ticker;
   $scope.chartView = 1;
 
@@ -94,5 +94,8 @@ angular.module('ionicStarterApp.controllers', [])
       $scope.stockDetailedData = data;
     });
   }
+
+  console.log(dateService.currentDate());
+  console.log(dateService.oneYearAgoDate());
   
 }]);
