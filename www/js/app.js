@@ -7,6 +7,8 @@
 angular.module('ionicStarterApp', 
   [
     'ionic',
+    'nvd3',
+    'nvChart',
     'ionicStarterApp.controllers',
     'ionicStarterApp.services',
     'ionicStarterApp.filters',
