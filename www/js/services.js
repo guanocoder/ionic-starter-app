@@ -20,7 +20,7 @@ angular.module("ionicStarterApp.services", [])
         }
     }
 })
-.factory("dateService", function($filter) {
+.factory("dateService", function($filter) {    
     var currentDate = function() {
         return $filter('date')(new Date(), 'yyyy-MM-dd');
     };
@@ -72,4 +72,44 @@ angular.module("ionicStarterApp.services", [])
         getPriceData: getPriceData,
         getDetailedData: getDetailedData,
     };
-});
+})
+
+.factory('chartDataService', function($q, $http, encodeURIService) {
+    
+    var getHistoricalData = function (ticker, fromDate, endDate) {
+        var deferred = $q.defer();
+        var query = `select * from yahoo.finance.historicaldata where symbol = "${ticker}" and startDate = "${fromDate}" and endDate = "${endDate}"`;
+        var yahooApiUrl = `http://query.yahooapis.com/v1/public/yql?q=${encodeURIService.encode(query)}&format=json&env=http://datatables.org/alltables.env`;
+        $http.get(yahooApiUrl)
+            .success(json => {
+                var jsonData = json.query.results.quote;
+                var priceData = [], volumeData = [];
+                jsonData.forEach(dayDataObject => {
+                    var date = Date.parse(dayDataObject.Date);
+                    var price = parseFloat(Math.round(dayDataObject.Close * 100) / 100).toFixed(3);
+                    var volume = dayDataObject.Volume;
+                    priceData.unshift([date, price]);
+                    volumeData.unshift([date, volume]);
+                });
+                var chartData = [{
+                    key: "volume",
+                    bar: true,
+                    values: volumeData,
+                },{
+                    key: ticker,
+                    values: priceData,
+                }];
+                deferred.resolve(chartData);
+            })
+            .error(function(error) {
+                console.log(`Chart data error: ${error}`);
+                deferred.reject();
+            });
+        return deferred.promise;
+    };
+
+    return {
+        getHistoricalData : getHistoricalData
+    }
+})
+;
