@@ -34,38 +34,68 @@ angular.module("ionicStarterApp.services", [])
         oneYearAgoDate: oneYearAgoDate,
     }
 })
-.factory("stockDataService", function($q, $http, encodeURIService) {
+
+.factory("dataCacheService", function(CacheFactory) {
+    var chartDataCache;
+    chartDataCache = CacheFactory.get("chartDataCache");
+    // I bet this shit gets called only once per app execution
+    // but I just follow whatever crap I see in the course
+    if(typeof(chartDataCache) == 'undefined') {
+        chartDataCache = CacheFactory("chartDataCache", {
+            maxAge: 15 * 60 * 1000,
+            deleteOnExpire: 'aggressive',
+            storageMode: 'localStorage'
+        });     
+    }
+    return chartDataCache;
+})
+
+.factory("stockDataService", function($q, $http, encodeURIService, dataCacheService) {
 
     var getDetailedData = function(ticker) {
         var deferred = $q.defer();
-        //var yahooApiUrl = `http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20IN%20(%22${ticker}%22)&format=json&env=http://datatables.org/alltables.env`;
-        var query = `select * from yahoo.finance.quotes where symbol IN ("${ticker}")`;
-        var yahooApiUrl = `http://query.yahooapis.com/v1/public/yql?q=${encodeURIService.encode(query)}&format=json&env=http://datatables.org/alltables.env`;
-        $http.get(yahooApiUrl)
+        var cacheKey = `stock-data-${ticker}`;
+        var chartDataCache = dataCacheService.get(cacheKey);
+        if(chartDataCache) {
+            deferred.resolve(chartDataCache);
+        } else {
+            //var yahooApiUrl = `http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20IN%20(%22${ticker}%22)&format=json&env=http://datatables.org/alltables.env`;
+            var query = `select * from yahoo.finance.quotes where symbol IN ("${ticker}")`;
+            var yahooApiUrl = `http://query.yahooapis.com/v1/public/yql?q=${encodeURIService.encode(query)}&format=json&env=http://datatables.org/alltables.env`;
+            $http.get(yahooApiUrl)
             .success(json => {
                 var jsonData = json.query.results.quote;
                 deferred.resolve(jsonData);
+                dataCacheService.put(cacheKey, jsonData);
             })
             .error(function(error) {
                 console.log(`Details data error: ${error}`);
                 deferred.reject();
             });
+        }
         return deferred.promise;
         
     };
 
     var getPriceData = function(ticker) {
         var deferred = $q.defer();
-        var yahooApiUrl = `http://finance.yahoo.com/webservice/v1/symbols/${ticker}/quote?format=json&view=detail`;
-        $http.get(yahooApiUrl)
+        var cacheKey = `price-data-${ticker}`;
+        var chartDataCache = dataCacheService.get(cacheKey);
+        if(chartDataCache) {
+            deferred.resolve(chartDataCache);
+        } else {
+            var yahooApiUrl = `http://finance.yahoo.com/webservice/v1/symbols/${ticker}/quote?format=json&view=detail`;
+            $http.get(yahooApiUrl)
             .success(json => {
                 var jsonData = json.list.resources[0].resource.fields;
                 deferred.resolve(jsonData);
+                dataCacheService.put(cacheKey, jsonData);
             })
             .error(function(error) {
                 console.log(`Price data error: ${error}`);
                 deferred.reject();
             });
+        }
         return deferred.promise;
     };
     return {
@@ -74,13 +104,19 @@ angular.module("ionicStarterApp.services", [])
     };
 })
 
-.factory('chartDataService', function($q, $http, encodeURIService) {
+.factory('chartDataService', function($q, $http, encodeURIService, dataCacheService) {
     
     var getHistoricalData = function (ticker, fromDate, endDate) {
         var deferred = $q.defer();
-        var query = `select * from yahoo.finance.historicaldata where symbol = "${ticker}" and startDate = "${fromDate}" and endDate = "${endDate}"`;
-        var yahooApiUrl = `http://query.yahooapis.com/v1/public/yql?q=${encodeURIService.encode(query)}&format=json&env=http://datatables.org/alltables.env`;
-        $http.get(yahooApiUrl)
+        var cacheKey = `chart-data-${ticker}`;
+        var chartDataCache = dataCacheService.get(cacheKey);
+
+        if(chartDataCache) {
+            deferred.resolve(chartDataCache);
+        } else {
+            var query = `select * from yahoo.finance.historicaldata where symbol = "${ticker}" and startDate = "${fromDate}" and endDate = "${endDate}"`;
+            var yahooApiUrl = `http://query.yahooapis.com/v1/public/yql?q=${encodeURIService.encode(query)}&format=json&env=http://datatables.org/alltables.env`;
+            $http.get(yahooApiUrl)
             .success(json => {
                 var jsonData = json.query.results.quote;
                 var priceData = [], volumeData = [];
@@ -100,11 +136,13 @@ angular.module("ionicStarterApp.services", [])
                     values: priceData,
                 }];
                 deferred.resolve(chartData);
+                dataCacheService.put(cacheKey, chartData);
             })
             .error(function(error) {
                 console.log(`Chart data error: ${error}`);
                 deferred.reject();
             });
+        }
         return deferred.promise;
     };
 

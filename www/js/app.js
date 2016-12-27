@@ -7,6 +7,7 @@
 angular.module('ionicStarterApp', 
   [
     'ionic',
+    'angular-cache',
     'nvd3',
     'nvChart',
     'ionicStarterApp.controllers',
