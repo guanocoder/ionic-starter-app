@@ -1,26 +1,38 @@
-<ion-view view-title="{{ticker}}">
+<ion-view view-title="{{ticker}}" drag-content="false">
 
-  <div class="bar bar-subheader bar-light">
+  <ion-nav-bar id="stock-navbar" class="bar-dark ng-style:reactiveColor">
+    <ion-nav-back-button>
+
+    </ion-nav-back-button>
+  </ion-nav-bar>
+
+  <div class="bar bar-subheader bar-light" id="stock-subheader-bar">
 
     <div class="buttons" side="left">
-      <div class="button button-clear">
-        <h6>{{stockDetailedData.Name}}</h6>
+      <div class="button button-clear display-flex">
+        <h6 id="stock-name">{{stockDetailedData.Name}}</h6>
       </div>
     </div>
 
-    <h2 class="title button-left button-right">{{stockPriceData.price | shrinkNumber:2 }}</h2>
+    <h2 class="title button-left button-right" id="stock-price">{{stockPriceData.price | shrinkNumber:2 }}</h2>
 
     <div class="buttons" side="right">
       <div class="button button-clear">
-        <h6>{{stockPriceData.chg_percent | number:3 }}%</h6>
+        <h6 id="stock-change" ng-class="stockPriceData.change < 0 ? 'assertive' : 'balanced'">
+          <span ng-if="stockPriceData.change > 0">+</span>
+          {{stockPriceData.change | shrinkNumber:2}}
+          <br/>
+          <span ng-if="stockPriceData.change > 0">+</span>
+          {{stockPriceData.chg_percent | number:3 }}%
+        </h6>
       </div>
     </div>
 
   </div>
 
-  <ion-content class="has-subheader">
+  <ion-content class="has-subheader" scrollbar-y="false">
 
-    <div class="button-bar">
+    <div class="button-bar" id="short-button-bar">
       <a ng-click="chartViewFunc(1)" ng-class="chartView == 1 ? 'active' : ''" class="button">Day</a>
       <a ng-click="chartViewFunc(2)" ng-class="chartView == 2 ? 'active' : ''" class="button">Week</a>
       <a ng-click="chartViewFunc(3)" ng-class="chartView == 3 ? 'active' : ''" class="button">3m</a>
@@ -33,53 +45,56 @@
     <img ng-if="chartView == 3" ng-src="http://chart.finance.yahoo.com/z?s={{ticker}}&t=3m&q=l&l=on&z=m&a=vm" style="width:100%;" />
 
     <!--<img ng-if="chartView == 4" ng-src="http://chart.finance.yahoo.com/z?s={{ticker}}&t=1y&q=l&l=on&z=m&a=vm" style="width:100%;" />-->
-    <div id="interactiveChart" ng-if="chartView == 4" nv-chart="chartOptions" style="height: 70vh;"></div>
+    <div id="interactiveChart" ng-if="chartView == 4" nv-chart="chartOptions"></div>
 
     <img ng-if="chartView == 5" ng-src="http://chart.finance.yahoo.com/z?s={{ticker}}&t=my&q=l&l=on&z=m&a=vm" style="width:100%;" />
 
-    <div class="card">
-      <div class="item item-divider">Market Data</div>
+    <div class="card" id="market-data-card">
+      <div class="item item-divider">
+        Market Data
+        <span class="last-trade">Last trade: {{stockPriceData.utctime |date:'HH:mm'}}</span>
+      </div>
       <div class="row row-center">
         <div class="col">Ask:</div>
-        <div class="col">{{stockDetailedData.Ask | shrinkNumber: 2}}</div>
+        <div class="col col-20">{{stockDetailedData.Ask | shrinkNumber: 2}}</div>
         <div class="col">Bid:</div>
-        <div class="col">{{stockDetailedData.Bid | shrinkNumber: 2}}</div>
+        <div class="col col-20">{{stockDetailedData.Bid | shrinkNumber: 2}}</div>
       </div>
       <div class="row row-center">
         <div class="col">Prev. Close:</div>
-        <div class="col">{{stockDetailedData.PreviousClose | shrinkNumber: 2}}</div>
+        <div class="col col-20">{{stockDetailedData.PreviousClose | shrinkNumber: 2}}</div>
         <div class="col">Open:</div>
-        <div class="col">{{stockDetailedData.Open | shrinkNumber: 2}}</div>
+        <div class="col col-20">{{stockDetailedData.Open | shrinkNumber: 2}}</div>
       </div>
       <div class="row row-center">
         <div class="col">Day's High:</div>
-        <div class="col">{{stockPriceData.day_high | shrinkNumber: 2}}</div>
+        <div class="col col-20">{{stockPriceData.day_high | shrinkNumber: 2}}</div>
         <div class="col">Day's Low:</div>
-        <div class="col">{{stockPriceData.day_low | shrinkNumber: 2}}</div>
+        <div class="col col-20">{{stockPriceData.day_low | shrinkNumber: 2}}</div>
       </div>
       <div class="row row-center">
         <div class="col">52w High:</div>
-        <div class="col">{{stockDetailedData.YearHigh | shrinkNumber: 2}}</div>
+        <div class="col col-20">{{stockDetailedData.YearHigh | shrinkNumber: 2}}</div>
         <div class="col">52w Low:</div>
-        <div class="col">{{stockDetailedData.YearLow | shrinkNumber: 2}}</div>
+        <div class="col col-20">{{stockDetailedData.YearLow | shrinkNumber: 2}}</div>
       </div>
       <div class="row row-center">
         <div class="col">Volume:</div>
-        <div class="col">{{stockPriceData.volume | shrinkNumber: 2}}</div>
+        <div class="col col-20">{{stockPriceData.volume | shrinkNumber: 2}}</div>
         <div class="col">Avg. Volume:</div>
-        <div class="col">{{stockDetailedData.AverageDailyVolume | shrinkNumber: 2}}</div>
+        <div class="col col-20">{{stockDetailedData.AverageDailyVolume | shrinkNumber: 2}}</div>
       </div>
       <div class="row row-center">
         <div class="col">Market Cap:</div>
-        <div class="col">{{stockDetailedData.MarketCapitalization}}</div>
+        <div class="col col-20">{{stockDetailedData.MarketCapitalization}}</div>
         <div class="col">EBITDA:</div>
-        <div class="col">{{stockDetailedData.EBITDA}}</div>
+        <div class="col col-20">{{stockDetailedData.EBITDA}}</div>
       </div>
       <div class="row row-center">
         <div class="col">P/E:</div>
-        <div class="col">{{stockDetailedData.PERatio | shrinkNumber: 2}}</div>
+        <div class="col col-20">{{stockDetailedData.PERatio | shrinkNumber: 2}}</div>
         <div class="col">EPS:</div>
-        <div class="col">{{stockDetailedData.EarningsShare | shrinkNumber: 2}}</div>
+        <div class="col col-20">{{stockDetailedData.EarningsShare | shrinkNumber: 2}}</div>
       </div>
     </div>
 
