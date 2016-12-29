@@ -58,9 +58,10 @@ angular.module('ionicStarterApp.controllers', [])
   ];
 }])
 
-.controller('stockController', ["$scope", "$stateParams", "$ionicPopup", "stockDataService", "dateService", "chartDataService", function($scope, $stateParams, $ionicPopup, stockDataService, dateService, chartDataService) {
+.controller('stockController', ["$scope", "$stateParams", "$ionicPopup", "stockDataService", "dateService", "chartDataService", "notesService", function($scope, $stateParams, $ionicPopup, stockDataService, dateService, chartDataService, notesService) {
   $scope.ticker = $stateParams.ticker;
   $scope.chartView = 4;
+  $scope.stockNotes = [];
 
   // Service call with ngResource
   // $scope.finData = stockDataService.getStockData($scope.ticker);
@@ -85,34 +86,77 @@ angular.module('ionicStarterApp.controllers', [])
       title: `New note for ${$scope.ticker}`,
       //subTitle: 'please blab ala bal',
       scope: $scope,
-      buttons: [
-        {
-          text: 'Cancel',
-          onTap: function(e) {
-            return;
-          }
-        },
-        {
-          text: '<b>Save</b>',
-          type: 'button-balanced',
-          onTap: function(e) {
-            if(!$scope.note.body) {
-              e.preventDefault();
-            } else {
-              return $scope.note.body;
-            }
+      buttons: [{
+        text: 'Cancel',
+        onTap: function(e) {
+          return;
+        }
+      },{
+        text: '<b>Save</b>',
+        type: 'button-balanced',
+        onTap: function(e) {
+          if(!$scope.note.body) {
+            e.preventDefault();
+          } else {
+            notesService.addNote($scope.ticker, $scope.note);
+            return $scope.note.body;
           }
         }
-      ]
+      }]
     }).then(function(res) {
-      console.log("tapped!", res)
+      $scope.stockNotes = notesService.getNotes($scope.ticker);
     })
   }
+
+  $scope.openNote = function(index, title, body) {
+    $scope.note = {
+      title: title,
+      body: body,
+      date: dateService.currentDate(),
+      ticker: $scope.ticker 
+    };
+
+    var notePopup = $ionicPopup.show({
+      template: '<input type="text" ng-model="note.title" id="stock-note-title" /><textarea type="text" ng-model="note.body" id="stock-note-body"></textarea>',
+      title: $scope.note.title,
+      //subTitle: 'please blab ala bal',
+      scope: $scope,
+      buttons: [{
+        text: 'Delete',
+        type: 'button-assertive button-small',
+        onTap: function(e) {
+          notesService.deleteNote($scope.ticker, index);
+        }
+      },{
+        text: 'Cancel',
+        type: 'button-small',
+        onTap: function(e) {
+          return;
+        }
+      },{
+        text: '<b>Save</b>',
+        type: 'button-balanced button-small',
+        onTap: function(e) {
+          if(!$scope.note.body) {
+            e.preventDefault();
+          } else {
+            notesService.deleteNote($scope.ticker, index);
+            notesService.addNote($scope.ticker, $scope.note);
+            return $scope.note.body;
+          }
+        }
+      }]
+    }).then(function(res) {
+      $scope.stockNotes = notesService.getNotes($scope.ticker);
+    })
+  };
+  
 
   $scope.$on("$ionicView.afterEnter", function() {
     getPriceData();
     getDetailedData();
     getChartData();
+    $scope.stockNotes = notesService.getNotes($scope.ticker);
   });
 
   function getPriceData() {

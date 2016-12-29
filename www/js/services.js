@@ -150,4 +150,37 @@ angular.module("ionicStarterApp.services", [])
         getHistoricalData : getHistoricalData
     }
 })
+
+
+.factory('notesService', function() {
+
+    function cacheKey(ticker) {
+        return `notes-data-${ticker}`;
+    }
+
+    function getNotes(ticker) {
+        var notesString = localStorage.getItem(cacheKey(ticker));
+        if(!notesString)
+            return [];
+        return eval(notesString);
+    }
+
+    function addNote(ticker, note) {
+        var stockNotes = getNotes(ticker);
+        stockNotes.push(note);
+        localStorage.setItem(cacheKey(ticker), JSON.stringify(stockNotes));        
+    }
+
+    function deleteNote(ticker, index) {
+        var stockNotes = getNotes(ticker);
+        stockNotes.splice(index,1);
+        localStorage.setItem(cacheKey(ticker), JSON.stringify(stockNotes));
+    }
+
+    return {
+        getNotes: getNotes,
+        addNote: addNote,
+        deleteNote: deleteNote
+    }
+})
 ;

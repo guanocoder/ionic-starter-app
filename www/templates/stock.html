@@ -103,8 +103,9 @@
         Notes
         <span ng-click="addNote()" style="float: right; color: blue;">Add</span>
       </div>
-      <a class="item">
-        <h2>Note Title</h2>
+      <a class="item" ng-repeat="note in stockNotes track by $index" ng-click="openNote($index, note.title, note.body)">
+        <h2>{{note.title}}</h2>
+        <h6>{{note.date | date: 'd-M-yy'}}</h6>
       </a>
     </div>
 
