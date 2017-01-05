@@ -181,6 +181,40 @@ angular.module("ionicStarterApp.services", [])
         getNotes: getNotes,
         addNote: addNote,
         deleteNote: deleteNote
+    };
+})
+
+
+.factory('newsService', function($q, $http) {
+    function getNews(ticker) {
+        var deferred = $q.defer();
+        var x2js = new X2JS();
+        //var cacheKey = `news-data-${ticker}`;
+        //var chartDataCache = dataCacheService.get(cacheKey);
+        //if(chartDataCache) {
+        //    deferred.resolve(chartDataCache);
+        //} else {
+            //var yahooApiUrl = `http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20IN%20(%22${ticker}%22)&format=json&env=http://datatables.org/alltables.env`;
+            var url = `http://finance.yahoo.com/rss/headline?s=${ticker}`;
+            $http.get(url)
+            .success(xml => {
+                var xmlDoc = x2js.parseXmlString(xml);
+                var jsonData = x2js.xml2json(xmlDoc);
+                var jsonNews = jsonData.rss.channel.item;
+
+                deferred.resolve(jsonNews);
+                //dataCacheService.put(cacheKey, jsonData);
+            })
+            .error(function(error) {
+                console.log(`News data error: ${error}`);
+                deferred.reject();
+            });
+        //}
+        return deferred.promise;        
     }
+
+    return {
+        getNews: getNews
+    };
 })
 ;
