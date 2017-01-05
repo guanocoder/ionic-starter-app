@@ -1,4 +1,29 @@
 angular.module("ionicStarterApp.filters", [])
+
+.filter("characters", function() {
+    return (input, chars, breakOnWord, ellipsis) => {
+        if(isNaN(chars)) return input;
+        if(chars <= 0) return '';
+        if(input && input.length > chars) {
+            input = input.substring(0, chars);
+
+            if(!breakOnWord) {
+                var lastspace = input.lastIndexOf(' ');
+                // get last space
+                if(lastspace !== -1) {
+                    input = input.substr(0, lastspace);
+                }
+            } else {
+                while(input.charAt(input.length-1) === ' ') {
+                    input = input.substr(0, input.length-1);
+                }
+            }
+            return input + ((ellipsis) ? '…' : '');
+        }
+        return input;
+    };
+})
+
 .filter("shrinkNumber", ($filter) => {
     return (number, fractionSize) => {
         if(number === null) return null;
