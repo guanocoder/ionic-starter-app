@@ -217,4 +217,74 @@ angular.module("ionicStarterApp.services", [])
         getNews: getNews
     };
 })
+
+.factory('followStocksService', function() {
+
+    // var storageKey = 'following-stocks-data';
+    // function getFollowingArray() {
+    //     var followingStocks = [];
+    //     var followingStocksString = localStorage.getItem(storageKey);
+    //     if(followingStocksString)
+    //         followingStocks = JSON.parse(followingStocksString);
+    //     return followingStocks;
+    // }
+
+    var storageKey = 'initial-stocks-data';
+    function getStocksArray() {
+        // default list if application data is empty
+        var myStocks = [
+            { ticker: 'AAPL' },
+            { ticker: 'GPRO' },
+            { ticker: 'FB' },
+            { ticker: 'NFLX' },
+            { ticker: 'TSLA' },
+            { ticker: 'BRK-A' },
+            { ticker: 'INTC' },
+            { ticker: 'MSFT' },
+            { ticker: 'GE' },
+            { ticker: 'BAC' },
+            { ticker: 'C' },
+            { ticker: 'T' },
+        ];
+        var myStocksString = localStorage.getItem(storageKey);
+        if(myStocksString)
+            myStocks = JSON.parse(myStocksString);
+        return myStocks;
+    }
+
+    function follow(ticker) {
+        var followingStocks = getStocksArray();
+        followingStocks.push({ ticker: ticker.toUpperCase() });
+        localStorage.setItem(storageKey, JSON.stringify(followingStocks));
+    }
+
+    function unfollow(ticker) {
+        var followingStocks = getStocksArray();
+        for(var i = 0; i < followingStocks.length; i++) {
+            if(followingStocks[i].ticker.toUpperCase() == ticker.toUpperCase()) {
+                followingStocks.splice(i, 1);
+                break;
+            }
+        }
+        localStorage.setItem(storageKey, JSON.stringify(followingStocks));
+    }
+
+    function isFollowed(ticker) {
+        var followingStocks = getStocksArray();
+        for(var i = 0; i < followingStocks.length; i++) {
+            if(followingStocks[i].ticker.toUpperCase() == ticker.toUpperCase()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    return {
+        getStocksArray: getStocksArray,
+        follow: follow,
+        unfollow: unfollow,
+        isFollowed: isFollowed
+    }
+})
+
 ;

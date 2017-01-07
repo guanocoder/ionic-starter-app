@@ -41,27 +41,25 @@ angular.module('ionicStarterApp.controllers', [])
   };
 })
 
-.controller('myStocksController', ["$scope", function($scope) {
-  $scope.myStocks = [
-    { ticker: 'AAPL' },
-    { ticker: 'GPRO' },
-    { ticker: 'FB' },
-    { ticker: 'NFLX' },
-    { ticker: 'TSLA' },
-    { ticker: 'BRK-A' },
-    { ticker: 'INTC' },
-    { ticker: 'MSFT' },
-    { ticker: 'GE' },
-    { ticker: 'BAC' },
-    { ticker: 'C' },
-    { ticker: 'T' },
-  ];
+.controller('myStocksController', ["$scope", "followStocksService", function($scope, followStocksService) {
+
+  function updateStockList() {
+    $scope.myStocks = followStocksService.getStocksArray();
+  }
+
+  // as if on focus event
+  $scope.$on('$ionicView.enter', function(event, args) {
+    updateStockList();
+  });
+
+  updateStockList();
 }])
 
-.controller('stockController', ["$scope", "$stateParams", "$ionicPopup", "stockDataService", "dateService", "chartDataService", "notesService", "newsService", function($scope, $stateParams, $ionicPopup, stockDataService, dateService, chartDataService, notesService, newsService) {
+.controller('stockController', ["$scope", "$stateParams", "$ionicPopup", "stockDataService", "dateService", "chartDataService", "notesService", "newsService", "followStocksService", function($scope, $stateParams, $ionicPopup, stockDataService, dateService, chartDataService, notesService, newsService, followStocksService) {
   $scope.ticker = $stateParams.ticker;
   $scope.chartView = 4;
   $scope.stockNotes = [];
+  $scope.isFollowed = followStocksService.isFollowed($scope.ticker);
 
   // Service call with ngResource
   // $scope.finData = stockDataService.getStockData($scope.ticker);
@@ -73,6 +71,16 @@ angular.module('ionicStarterApp.controllers', [])
     // TODO: install and set up inAppBrowser
     console.log("open window " + link);
   };
+
+  $scope.toggleFollow = function() {
+    if($scope.isFollowed) {
+      followStocksService.unfollow($scope.ticker);
+      $scope.isFollowed = false;
+    } else {
+      followStocksService.follow($scope.ticker);
+      $scope.isFollowed = true;
+    }
+  }
 
   $scope.chartViewFunc = function(chartIndex) {
     $scope.chartView = chartIndex;
@@ -181,9 +189,9 @@ angular.module('ionicStarterApp.controllers', [])
       $scope.stockPriceData = data;
 
       if(data.chg_percent >= 0 && data !== null) {
-        $scope.reactiveColor = {'background-color': '#33cd5f'};
+        $scope.reactiveColor = {'background-color': '#33cd5f', 'border-color': 'rgba(255,255,255,0.3)'};
       } else if(data.chg_percent <= 0 && data !== null) {
-        $scope.reactiveColor = {'background-color': '#ef473a'};
+        $scope.reactiveColor = {'background-color': '#ef473a', 'border-color': 'rgba(0,0,0,0.2)'};
       }
     });
   }
