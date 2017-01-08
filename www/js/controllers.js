@@ -4,10 +4,36 @@ angular.module('ionicStarterApp.controllers', [])
   $scope.modalService = modalService;
 })
 
-.controller('myStocksController', ["$scope", "followStocksService", function($scope, followStocksService) {
+.controller('myStocksController', ["$scope", "stockDataService", "followStocksService", function($scope, stockDataService, followStocksService) {
+
+  $scope.$on('$ionicView.afterEnter', function(event, args) {
+    updatePriceData();
+  });
+
+  $scope.unfollowStock = function(ticker) {
+    followStocksService.unfollow(ticker);
+    updateStockList();
+    updatePriceData();
+  };
+
+  $scope.refresh = function() {
+    console.log("update pulled!");
+    updatePriceData();
+    $scope.$broadcast('scroll.refreshComplete');
+  }
 
   function updateStockList() {
     $scope.myStocks = followStocksService.getStocksArray();
+  }
+
+
+  function updatePriceData() {
+    $scope.myStocksPriceData = [];
+    $scope.myStocks.forEach(function(stock) {
+      stockDataService.getPriceData(stock.ticker).then(function(data) {
+        $scope.myStocksPriceData.push(data);        
+      });
+    });
   }
 
   // as if on focus event
