@@ -13,6 +13,41 @@ angular.module("ionicStarterApp.services", [])
 //     };
 // }])
 
+.service('modalService', function($ionicModal) {
+    this.openModal = function(id) {
+        var self = this;
+
+        if(id == 1) {
+            $ionicModal.fromTemplateUrl('templates/search.html', {
+                scope: null,
+                controller: 'searchController'
+            }).then(function(modal) {
+                self.modal = modal;
+                self.modal.show();
+            });
+        } else if(id == 2) {
+            $ionicModal.fromTemplateUrl('templates/login.html', {
+                scope: $scope
+            }).then(function(modal) {
+                $scope.modal = modal;
+            });          
+        } else {
+            $ionicModal.fromTemplateUrl('templates/login.html', {
+                scope: $scope
+            }).then(function(modal) {
+                $scope.modal = modal;
+            });
+        }
+    };
+
+    this.closeModal = function() {
+        if(this.modal) {
+            this.modal.hide();
+            this.modal.remove();
+        }
+    };
+})
+
 .factory("encodeURIService", function() {
     return {
         encode: function(string) {
@@ -287,4 +322,25 @@ angular.module("ionicStarterApp.services", [])
     }
 })
 
+.factory('searchService', function($q, $http) {
+
+    function search(query) {
+        var deferred = $q.defer();
+        //var url = `https://s.yimg.com/aq/autoc?query=${query}&region=CA&lang=en-CA&callback=JSON_CALLBACK`;
+        //var url = `https://s.yimg.com/aq/autoc?query=${query}&region=RU&lang=ru-RU`;
+        var url = `https://s.yimg.com/aq/autoc?query=${query}&region=CA&lang=en-CA`
+
+        // not CORS friendly. But jsonp calls fail for some obscure reason so fuk it!
+        $http.get(url).success(function(data) {
+            var jsonData = data.ResultSet.Result;
+            deferred.resolve(jsonData);
+        });
+
+        return deferred.promise;
+    }
+
+    return {
+        search: search
+    };
+})
 ;
