@@ -245,7 +245,7 @@ angular.module('ionicStarterApp.controllers', [])
   }
 
   $scope.search = function() {
-    $scope.searchResults = [];
+    $scope.searchResults = '';
     startSearch($scope.searchQuery);
   };
 
