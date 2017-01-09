@@ -27,15 +27,19 @@ angular.module("ionicStarterApp.services", [])
             });
         } else if(id == 2) {
             $ionicModal.fromTemplateUrl('templates/login.html', {
-                scope: $scope
+                scope: null,
+                controller: 'loginController'
             }).then(function(modal) {
-                $scope.modal = modal;
+                self.modal = modal;
+                self.modal.show();
             });          
         } else {
-            $ionicModal.fromTemplateUrl('templates/login.html', {
-                scope: $scope
+            $ionicModal.fromTemplateUrl('templates/signup.html', {
+                scope: null,
+                controller: 'loginController'
             }).then(function(modal) {
-                $scope.modal = modal;
+                self.modal = modal;
+                self.modal.show();
             });
         }
     };

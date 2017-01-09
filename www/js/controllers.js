@@ -318,4 +318,14 @@ angular.module('ionicStarterApp.controllers', [])
   };
 
 }])
+
+
+.controller('loginController', ['$scope', 'modalService', function($scope, modalService) {
+
+  $scope.closeModal = function() {
+    modalService.closeModal();
+  }
+
+
+}])
 ;
