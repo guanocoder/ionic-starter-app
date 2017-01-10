@@ -112,11 +112,11 @@ angular.module("ionicStarterApp.services", [])
         
     };
 
-    var getPriceData = function(ticker) {
+    var getPriceData = function(ticker, ignoreCache = false) {
         var deferred = $q.defer();
         var cacheKey = `price-data-${ticker}`;
         var chartDataCache = dataCacheService.get(cacheKey);
-        if(chartDataCache) {
+        if(chartDataCache && !ignoreCache) {
             deferred.resolve(chartDataCache);
         } else {
             var yahooApiUrl = `http://finance.yahoo.com/webservice/v1/symbols/${ticker}/quote?format=json&view=detail`;

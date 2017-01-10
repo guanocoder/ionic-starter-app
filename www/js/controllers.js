@@ -18,8 +18,10 @@ angular.module('ionicStarterApp.controllers', [])
 
   $scope.refresh = function() {
     console.log("update pulled!");
-    updatePriceData();
-    $scope.$broadcast('scroll.refreshComplete');
+    updatePriceData(true, function() {
+      $scope.$broadcast('scroll.refreshComplete');
+    });
+    
   }
 
   function updateStockList() {
@@ -27,13 +29,34 @@ angular.module('ionicStarterApp.controllers', [])
   }
 
 
-  function updatePriceData() {
-    $scope.myStocksPriceData = [];
-    $scope.myStocks.forEach(function(stock) {
-      stockDataService.getPriceData(stock.ticker).then(function(data) {
-        $scope.myStocksPriceData.push(data);        
-      });
-    });
+  function updatePriceData(ignoreCache = false, onFinish = null) {
+      $scope.myStocksPriceData = [];
+      var promiseChain = null;
+
+      // build price data load chain
+      if($scope.myStocks.length > 0) {
+          promiseChain = stockDataService.getPriceData($scope.myStocks[0].ticker, ignoreCache);
+
+          var others = $scope.myStocks.slice(1);
+          others.forEach(function(stock) {
+              promiseChain = promiseChain.then(function(data) {
+                  console.log("pushing data: " + data.symbol);
+                  $scope.myStocksPriceData.push(data);
+                  console.log("chaining ticker: " + stock.ticker);
+                  return stockDataService.getPriceData(stock.ticker, ignoreCache);
+              })
+          });
+
+          // last one has to signal finish (for reload animation to stock for example)
+          promiseChain.then(function(data) {
+              console.log("pushing last data: " + data.symbol);
+              $scope.myStocksPriceData.push(data);
+              if(onFinish) onFinish();
+          });
+      } else {
+          // or signal finish if there is nothing to load
+          if(onFinish) onFinish();
+      }
   }
 
   // as if on focus event
