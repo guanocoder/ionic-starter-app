@@ -44,13 +44,17 @@ angular.module('ionicStarterApp.controllers', [])
                   $scope.myStocksPriceData.push(data);
                   console.log("chaining ticker: " + stock.ticker);
                   return stockDataService.getPriceData(stock.ticker, ignoreCache);
-              })
+              }, function(error) {
+                  return stockDataService.getPriceData(stock.ticker, ignoreCache);
+              });
           });
 
           // last one has to signal finish (for reload animation to stock for example)
           promiseChain.then(function(data) {
               console.log("pushing last data: " + data.symbol);
               $scope.myStocksPriceData.push(data);
+              if(onFinish) onFinish();
+          }, function(error) {
               if(onFinish) onFinish();
           });
       } else {
