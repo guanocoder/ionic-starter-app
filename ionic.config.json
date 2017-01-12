@@ -18,6 +18,10 @@
     {
       "path": "/yahoofeeds",
       "proxyUrl": "http://feeds.finance.yahoo.com"
+    },
+    {
+      "path": "/yahoostocksearch",
+      "proxyUrl": "http://s.yimg.com"
     }
   ]
 }

@@ -330,9 +330,9 @@ angular.module("ionicStarterApp.services", [])
         var deferred = $q.defer();
         //var url = `https://s.yimg.com/aq/autoc?query=${query}&region=CA&lang=en-CA&callback=JSON_CALLBACK`;
         //var url = `https://s.yimg.com/aq/autoc?query=${query}&region=RU&lang=ru-RU`;
-        var url = `https://s.yimg.com/aq/autoc?query=${query}&region=CA&lang=en-CA`
-
-        // not CORS friendly. But jsonp calls fail for some obscure reason so fuk it!
+        // yahoostocksearch points to https://s.yimg.com (settings of proxies are in /ionic.config.json)
+        // this allows to bypass CORS problem when running 'ionic serve'
+        var url = `/yahoostocksearch/aq/autoc?query=${query}&region=CA&lang=en-CA`
         $http.get(url).success(function(data) {
             var jsonData = data.ResultSet.Result;
             deferred.resolve(jsonData);
