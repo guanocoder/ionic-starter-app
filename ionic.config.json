@@ -9,5 +9,15 @@
     "www/**/*",
     "!www/lib/**/*",
     "!www/**/*.map"
+  ],
+  "proxies": [
+    {
+      "path": "/yahoofinance",
+      "proxyUrl": "http://finance.yahoo.com"
+    },
+    {
+      "path": "/yahoofeeds",
+      "proxyUrl": "http://feeds.finance.yahoo.com"
+    }
   ]
 }

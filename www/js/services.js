@@ -123,7 +123,9 @@ angular.module("ionicStarterApp.services", [])
         if(chartDataCache && !ignoreCache) {
             deferred.resolve(chartDataCache);
         } else {
-            var yahooApiUrl = `http://finance.yahoo.com/webservice/v1/symbols/${ticker}/quote?format=json&view=detail`;
+            // yahoofinance points to http://finance.yahoo.com (settings of proxies are in /ionic.config.json)
+            // this allows to bypass CORS problem when running 'ionic serve'
+            var yahooApiUrl = `yahoofinance/webservice/v1/symbols/${ticker}/quote?format=json&view=detail`;
             $http.get(yahooApiUrl)
             .success(json => {
                 var jsonData = json.list.resources[0].resource.fields;
@@ -228,13 +230,9 @@ angular.module("ionicStarterApp.services", [])
     function getNews(ticker) {
         var deferred = $q.defer();
         var x2js = new X2JS();
-        //var cacheKey = `news-data-${ticker}`;
-        //var chartDataCache = dataCacheService.get(cacheKey);
-        //if(chartDataCache) {
-        //    deferred.resolve(chartDataCache);
-        //} else {
-            //var yahooApiUrl = `http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quotes%20where%20symbol%20IN%20(%22${ticker}%22)&format=json&env=http://datatables.org/alltables.env`;
-            var url = `http://finance.yahoo.com/rss/headline?s=${ticker}`;
+        // yahoofeeds points to http://feeds.finance.yahoo.com (settings of proxies are in /ionic.config.json)
+        // this allows to bypass CORS problem when running 'ionic serve'
+        var url = `/yahoofeeds/rss/2.0/headline?s=${ticker}&region=US&lang=en-US`;
             $http.get(url)
             .success(xml => {
                 var xmlDoc = x2js.parseXmlString(xml);
