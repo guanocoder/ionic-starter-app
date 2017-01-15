@@ -7,10 +7,12 @@
 angular.module('ionicStarterApp', 
   [
     'ionic',
+    'firebase',
     'angular-cache',
     'nvd3',
     'nvChart',
     'cb.x2js',
+    'ionicStarterApp.config',
     'ionicStarterApp.controllers',
     'ionicStarterApp.services',
     'ionicStarterApp.filters',

@@ -6,6 +6,11 @@
   },
   "dependencies": {
     "angular-cache": "^4.6.0",
-    "angular-x2js": "^0.2.0"
+    "angular-x2js": "^0.2.0",
+    "firebase": "^3.6.5",
+    "angularfire": "^2.2.0"
+  },
+  "resolutions": {
+    "angular": ">= 1.0.8"
   }
 }

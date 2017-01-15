@@ -233,19 +233,19 @@ angular.module("ionicStarterApp.services", [])
         // yahoofeeds points to http://feeds.finance.yahoo.com (settings of proxies are in /ionic.config.json)
         // this allows to bypass CORS problem when running 'ionic serve'
         var url = `/yahoofeeds/rss/2.0/headline?s=${ticker}&region=US&lang=en-US`;
-            $http.get(url)
-            .success(xml => {
-                var xmlDoc = x2js.parseXmlString(xml);
-                var jsonData = x2js.xml2json(xmlDoc);
-                var jsonNews = jsonData.rss.channel.item;
+        $http.get(url)
+        .success(xml => {
+            var xmlDoc = x2js.parseXmlString(xml);
+            var jsonData = x2js.xml2json(xmlDoc);
+            var jsonNews = jsonData.rss.channel.item;
 
-                deferred.resolve(jsonNews);
-                //dataCacheService.put(cacheKey, jsonData);
-            })
-            .error(function(error) {
-                console.log(`News data error: ${error}`);
-                deferred.reject();
-            });
+            deferred.resolve(jsonNews);
+            //dataCacheService.put(cacheKey, jsonData);
+        })
+        .error(function(error) {
+            console.log(`News data error: ${error}`);
+            deferred.reject();
+        });
         //}
         return deferred.promise;        
     }
@@ -344,5 +344,49 @@ angular.module("ionicStarterApp.services", [])
     return {
         search: search
     };
+})
+
+
+.factory('firebaseRef', function($firebase, config) {
+    firebase.initializeApp(config.firebase);
+    return firebase;
+})
+
+
+.factory('userService', function(firebaseRef) {
+
+    function getCurrentUser() {
+        var currentUser = firebaseRef.auth().currentUser;
+        var userEmail = (currentUser) ? currentUser.email : '';
+        return {
+            isAuthenticated: (currentUser ? true : false),
+            email: userEmail,
+            data: firebaseRef.auth().currentUser
+        };
+    }
+
+    function signup(user) {
+        return firebaseRef.auth().createUserWithEmailAndPassword(user.email, user.password);
+    }
+
+    function login(user) {
+        return firebaseRef.auth().signInWithEmailAndPassword(user.email, user.password);
+    }
+
+    function logout() {
+        return firebaseRef.auth().signOut();
+    }
+
+    function onAuthStateChanged(authCallback) {
+        firebaseRef.auth().onAuthStateChanged(authCallback);
+    }
+
+    return {
+        signup: signup,
+        login: login,
+        logout: logout,
+        getCurrentUser: getCurrentUser,
+        onAuthStateChanged: onAuthStateChanged
+    }
 })
 ;

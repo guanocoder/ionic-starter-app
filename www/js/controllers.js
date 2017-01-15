@@ -1,7 +1,43 @@
 angular.module('ionicStarterApp.controllers', [])
 
-.controller('mainController', function($scope, modalService) {
+.controller('mainController', function($scope, $rootScope, modalService, userService) {
   $scope.modalService = modalService;
+
+  $rootScope.currentUser = {
+    isAuthenticated: false,
+    data: null
+  };
+
+  userService.onAuthStateChanged(function(user) {
+    if (user) {
+        $rootScope.$apply(function() {
+          $rootScope.currentUser = userService.getCurrentUser();
+        });
+        var currentUser = userService.getCurrentUser();
+        console.log("CurrentUser: " + ((currentUser.isAuthenticated) ? currentUser.email : null));
+    } else {
+      // No user is signed in.
+        $rootScope.currentUser = {
+            isAuthenticated: false,
+            data: null
+        };
+    }
+  });
+
+  $scope.logout = function() {
+    userService.logout().then(function() {
+        console.log("Log out successful");
+        var currentUser = userService.getCurrentUser();
+        console.log("CurrentUser: " + ((currentUser.isAuthenticated) ? currentUser.email : null));
+        $rootScope.$apply(function() {
+          $rootScope.currentUser = userService.getCurrentUser();
+        });
+    }).catch(function(error) {
+        console.log("Sign out error: " + error);
+        var currentUser = userService.getCurrentUser();
+        console.log("CurrentUser: " + ((currentUser.isAuthenticated) ? currentUser.email : null));
+    });
+  };
 })
 
 .controller('myStocksController', ["$scope", "stockDataService", "followStocksService", function($scope, stockDataService, followStocksService) {
@@ -320,12 +356,38 @@ angular.module('ionicStarterApp.controllers', [])
 }])
 
 
-.controller('loginController', ['$scope', 'modalService', function($scope, modalService) {
+.controller('loginController', ['$scope', '$rootScope', 'modalService', 'userService', function($scope, $rootScope, modalService, userService) {
+
+  $scope.user = {
+    email: "",
+    password: ""
+  };
 
   $scope.closeModal = function() {
     modalService.closeModal();
+  };
+
+  $scope.login = function(user) {
+    userService.login(user).then(function(authData) {
+        modalService.closeModal();
+        console.log("Logged in user: " + userService.getCurrentUser().email);
+        $rootScope.currentUser = userService.getCurrentUser();
+    })
+    .catch(function(error) {
+        console.log("Login Failed!", error);
+    });
   }
 
+  $scope.signup = function(user) {
+    userService.signup(user).then(function(authData) {
+        modalService.closeModal();
+        console.log("Signed up user: " + userService.getCurrentUser().email);
+        $rootScope.currentUser = userService.getCurrentUser();
+    })
+    .catch(function(error) {
+        console.log("Error creating user: ", error);
+    });
+  };
 
 }])
 ;
