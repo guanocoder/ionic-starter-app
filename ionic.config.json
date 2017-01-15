@@ -17,7 +17,7 @@
     },
     {
       "path": "/yahoofeeds",
-      "proxyUrl": "http://feeds.finance.yahoo.com"
+      "proxyUrl": "https://feeds.finance.yahoo.com"
     },
     {
       "path": "/yahoostocksearch",
