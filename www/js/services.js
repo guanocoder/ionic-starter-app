@@ -89,7 +89,7 @@ angular.module("ionicStarterApp.services", [])
     return chartDataCache;
 })
 
-.factory("stockDataService", function($q, $http, encodeURIService, dataCacheService) {
+.factory("stockDataService", function($q, $http, encodeURIService, dataCacheService, config) {
 
     var getDetailedData = function(ticker) {
         var deferred = $q.defer();
@@ -116,6 +116,9 @@ angular.module("ionicStarterApp.services", [])
         
     };
 
+    // Ionic not smart enough to deal with its own proxies when running on device
+    var urlPrefix = (window.cordova) ? config.urlPrefix : config.urlPrefix.proxy;
+
     var getPriceData = function(ticker, ignoreCache = false) {
         var deferred = $q.defer();
         var cacheKey = `price-data-${ticker}`;
@@ -125,7 +128,7 @@ angular.module("ionicStarterApp.services", [])
         } else {
             // yahoofinance points to http://finance.yahoo.com (settings of proxies are in /ionic.config.json)
             // this allows to bypass CORS problem when running 'ionic serve'
-            var yahooApiUrl = `yahoofinance/webservice/v1/symbols/${ticker}/quote?format=json&view=detail`;
+            var yahooApiUrl = `${urlPrefix.priceData}/webservice/v1/symbols/${ticker}/quote?format=json&view=detail`;
             $http.get(yahooApiUrl)
             .success(json => {
                 var jsonData = json.list.resources[0].resource.fields;
@@ -226,13 +229,16 @@ angular.module("ionicStarterApp.services", [])
 })
 
 
-.factory('newsService', function($q, $http) {
+.factory('newsService', function($q, $http, config) {
+    // Ionic not smart enough to deal with its own proxies when running on device
+    var urlPrefix = (window.cordova) ? config.urlPrefix : config.urlPrefix.proxy;
+
     function getNews(ticker) {
         var deferred = $q.defer();
         var x2js = new X2JS();
         // yahoofeeds points to http://feeds.finance.yahoo.com (settings of proxies are in /ionic.config.json)
         // this allows to bypass CORS problem when running 'ionic serve'
-        var url = `/yahoofeeds/rss/2.0/headline?s=${ticker}&region=US&lang=en-US`;
+        var url = `${urlPrefix.newsData}/rss/2.0/headline?s=${ticker}&region=US&lang=en-US`;
         $http.get(url)
         .success(xml => {
             var xmlDoc = x2js.parseXmlString(xml);
@@ -324,7 +330,10 @@ angular.module("ionicStarterApp.services", [])
     }
 })
 
-.factory('searchService', function($q, $http) {
+.factory('searchService', function($q, $http, config) {
+
+    // Ionic not smart enough to deal with its own proxies when running on device
+    var urlPrefix = (window.cordova) ? config.urlPrefix : config.urlPrefix.proxy;
 
     function search(query) {
         var deferred = $q.defer();
@@ -332,7 +341,7 @@ angular.module("ionicStarterApp.services", [])
         //var url = `https://s.yimg.com/aq/autoc?query=${query}&region=RU&lang=ru-RU`;
         // yahoostocksearch points to https://s.yimg.com (settings of proxies are in /ionic.config.json)
         // this allows to bypass CORS problem when running 'ionic serve'
-        var url = `/yahoostocksearch/aq/autoc?query=${query}&region=CA&lang=en-CA`
+        var url = `${urlPrefix.stockSearchData}/aq/autoc?query=${query}&region=CA&lang=en-CA`;
         $http.get(url).success(function(data) {
             var jsonData = data.ResultSet.Result;
             deferred.resolve(jsonData);
