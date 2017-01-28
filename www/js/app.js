@@ -32,7 +32,7 @@ angular.module('ionicStarterApp',
     }
     if (window.StatusBar) {
       // org.apache.cordova.statusbar required
-      StatusBar.styleDefault();
+      StatusBar.styleHex("#ffffff");
     }
   });
 })
