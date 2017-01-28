@@ -33,8 +33,6 @@ angular.module('ionicStarterApp.controllers', [])
           $rootScope.currentUser = userService.getCurrentUser();
         });
 
-        notesService.removeAll();
-        followStocksService.removeAll();
         $window.location.reload(true);
 
     }).catch(function(error) {
@@ -48,6 +46,14 @@ angular.module('ionicStarterApp.controllers', [])
 .controller('myStocksController', ["$scope", "stockDataService", "followStocksService", function($scope, stockDataService, followStocksService) {
 
   $scope.$on('$ionicView.afterEnter', function(event, args) {
+    updatePriceData();
+  });
+
+  $scope.$on('followStocksService.userListLoaded', function(event, args) {
+    // reload data
+    // TODO: implement programmatic pull to refresh trigger
+    // https://calendee.com/2015/04/25/trigger-pull-to-refresh-in-ionic-framework-apps/
+    updateStockList();
     updatePriceData();
   });
 
@@ -109,7 +115,7 @@ angular.module('ionicStarterApp.controllers', [])
     updateStockList();
   });
 
-  updateStockList();
+  //updateStockList();
 }])
 
 .controller('stockController', ["$scope", "$stateParams", "$ionicPopup", "stockDataService", "dateService", "chartDataService", "notesService", "newsService", "followStocksService", function($scope, $stateParams, $ionicPopup, stockDataService, dateService, chartDataService, notesService, newsService, followStocksService) {

@@ -206,12 +206,46 @@ angular.module("ionicStarterApp.services", [])
         });
     });
 
+    userService.addLogOutListener(function(authData) {
+        removeAll();
+    });
+
+    userService.addLogInListener(function(authData) {
+        removeAll();
+        loadUserNotes();        
+    });
+
+    function loadUserNotes() {
+        var user = userService.getCurrentUser();
+        if(user.isAuthenticated) {
+            firebaseRef.database().ref().child('users').child(user.data.uid).child('notes').once('value',
+                function(snapshot) {
+                    var notesFromDB = {};
+                    snapshot.forEach(function(stock) {
+                        stock.forEach(function(note) {
+                            var ticker = note.child('ticker').val();
+                            if(!notesFromDB[ticker])
+                                notesFromDB[ticker] = [];
+                            notesFromDB[ticker].push(note.val());
+                        });
+                    });
+                    Object.keys(notesFromDB).forEach(function (ticker) {
+                        localStorage.setItem(cacheKey(ticker), JSON.stringify(notesFromDB[ticker]));
+                    });
+                },
+                function(error) {
+                    console.log("Firebase error loading user notes: " + error);
+                });
+        }
+    }
+
     function updateNotes(ticker, notes) {
-        if(userService.getCurrentUser().isAuthenticated) {
-            firebaseRef.database().ref().child('users').child(userService.getCurrentUser().data.uid)
+        var user = userService.getCurrentUser();
+        if(user.isAuthenticated) {
+            firebaseRef.database().ref().child('users').child(user.data.uid)
                 .child('notes').child(ticker).remove();
             notes.forEach(function(note) {
-                firebaseRef.database().ref().child('users').child(userService.getCurrentUser().data.uid)
+                firebaseRef.database().ref().child('users').child(user.data.uid)
                     .child('notes').child(ticker).push(note);
             });
         }
@@ -296,16 +330,43 @@ angular.module("ionicStarterApp.services", [])
     };
 })
 
-.factory('followStocksService', function(firebaseRef, userService) {
+.factory('followStocksService', function($rootScope, firebaseRef, userService) {
 
     userService.addSignUpListener(function(authData) {
         var stockList = getStocksArray();
         firebaseRef.database().ref().child('users').child(authData.uid).child('stocks').set(stockList);
     });
 
+    userService.addLogOutListener(function(authData) {
+        removeAll();
+    });
+
+    userService.addLogInListener(function(authData) {
+        removeAll();
+        loadUserStockList();
+    });
+
+    function loadUserStockList() {
+        var user = userService.getCurrentUser();
+        if(user.isAuthenticated) {
+            firebaseRef.database().ref().child('users').child(user.data.uid)
+                .child('stocks').once('value', function(snapshot) {
+                    var stocksFromDB = [];
+                    snapshot.val().forEach(function(stock) {
+                        stocksFromDB.push({ ticker: stock.ticker });
+                    });
+                    localStorage.setItem(storageKey, JSON.stringify(stocksFromDB));
+                    $rootScope.$broadcast("followStocksService.userListLoaded");
+                }, function(error) {
+                    console.log("Firebase error loading stocklist: " + error);
+                });
+        }
+    }
+
     function updateUserStockList(stockList) {
-        if(userService.getCurrentUser().isAuthenticated) {
-            firebaseRef.database().ref().child('users').child(userService.getCurrentUser().data.uid)
+        var user = userService.getCurrentUser();
+        if(user.isAuthenticated) {
+            firebaseRef.database().ref().child('users').child(user.data.uid)
                 .child('stocks').set(stockList);
         }
     }
@@ -426,11 +487,7 @@ angular.module("ionicStarterApp.services", [])
     }
 
     function login(user) {
-        return firebaseRef.auth().signInWithEmailAndPassword(user.email, user.password).then(
-            function(authData) {
-                fireLogIn(authData);
-            }
-        );
+        return firebaseRef.auth().signInWithEmailAndPassword(user.email, user.password);
     }
 
     function logout() {
@@ -442,7 +499,12 @@ angular.module("ionicStarterApp.services", [])
     }
 
     function onAuthStateChanged(authCallback) {
-        firebaseRef.auth().onAuthStateChanged(authCallback);
+        firebaseRef.auth().onAuthStateChanged(function(user) {
+            if(user) {
+                fireLogIn(user);
+            }
+            authCallback(user);
+        });
     }
 
     var _onSignUpCallbacks = [];
@@ -460,7 +522,6 @@ angular.module("ionicStarterApp.services", [])
         _onSignUpCallbacks.push(callback);
     }
     function addLogInListener(callback) {
-        console.log('OnLogIn wired');
         _onLogInCallbacks.push(callback);
     }
     function addLogOutListener(callback) {
