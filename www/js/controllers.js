@@ -118,7 +118,7 @@ angular.module('ionicStarterApp.controllers', [])
   //updateStockList();
 }])
 
-.controller('stockController', ["$scope", "$stateParams", "$ionicPopup", "stockDataService", "dateService", "chartDataService", "notesService", "newsService", "followStocksService", function($scope, $stateParams, $ionicPopup, stockDataService, dateService, chartDataService, notesService, newsService, followStocksService) {
+.controller('stockController', ["$scope", "$stateParams", "$ionicPopup", "$cordovaInAppBrowser", "stockDataService", "dateService", "chartDataService", "notesService", "newsService", "followStocksService", function($scope, $stateParams, $ionicPopup, $cordovaInAppBrowser, stockDataService, dateService, chartDataService, notesService, newsService, followStocksService) {
   $scope.ticker = $stateParams.ticker;
   $scope.chartView = 4;
   $scope.stockNotes = [];
@@ -132,7 +132,14 @@ angular.module('ionicStarterApp.controllers', [])
 
   $scope.openWindow = function(link) {
     // TODO: install and set up inAppBrowser
-    console.log("open window " + link);
+
+    var inAppBrowserOptions = {
+      location: 'yes',
+      clearcache: 'yes',
+      toolbar: 'yes'
+    };
+
+    $cordovaInAppBrowser.open(link, '_blank', inAppBrowserOptions);
   };
 
   $scope.toggleFollow = function() {

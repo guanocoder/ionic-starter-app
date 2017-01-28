@@ -8,7 +8,8 @@
     "angular-cache": "^4.6.0",
     "angular-x2js": "^0.2.0",
     "firebase": "^3.6.5",
-    "angularfire": "^2.2.0"
+    "angularfire": "^2.2.0",
+    "ngCordova": "^0.1.27-alpha"
   },
   "resolutions": {
     "angular": ">= 1.0.8"
