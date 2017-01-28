@@ -193,7 +193,39 @@ angular.module("ionicStarterApp.services", [])
 })
 
 
-.factory('notesService', function() {
+.factory('notesService', function(firebaseRef, userService) {
+
+    userService.addSignUpListener(function(authData) {
+        allKeys().forEach(function(noteKey) {
+            var ticker = noteKey.substring(11);
+            var notes = getNotes(ticker);
+            notes.forEach(function(note) {
+                firebaseRef.database().ref().child('users').child(userService.getCurrentUser().data.uid)
+                    .child('notes').child(ticker).push(note);
+            });
+        });
+    });
+
+    function updateNotes(ticker, notes) {
+        if(userService.getCurrentUser().isAuthenticated) {
+            firebaseRef.database().ref().child('users').child(userService.getCurrentUser().data.uid)
+                .child('notes').child(ticker).remove();
+            notes.forEach(function(note) {
+                firebaseRef.database().ref().child('users').child(userService.getCurrentUser().data.uid)
+                    .child('notes').child(ticker).push(note);
+            });
+        }
+    }
+
+    function allKeys() {
+        var allStorageKeys = Object.keys(localStorage);
+        var allNoteKeys = [];
+        allStorageKeys.forEach(function(key) {
+            if(key.startsWith('notes-data-'))
+                allNoteKeys.push(key);
+        });
+        return allNoteKeys;
+    }
 
     function cacheKey(ticker) {
         return `notes-data-${ticker}`;
@@ -209,19 +241,28 @@ angular.module("ionicStarterApp.services", [])
     function addNote(ticker, note) {
         var stockNotes = getNotes(ticker);
         stockNotes.push(note);
-        localStorage.setItem(cacheKey(ticker), JSON.stringify(stockNotes));        
+        localStorage.setItem(cacheKey(ticker), JSON.stringify(stockNotes));
+        updateNotes(ticker, stockNotes);        
     }
 
     function deleteNote(ticker, index) {
         var stockNotes = getNotes(ticker);
         stockNotes.splice(index,1);
         localStorage.setItem(cacheKey(ticker), JSON.stringify(stockNotes));
+        updateNotes(ticker, stockNotes);        
+    }
+
+    function removeAll() {
+        allKeys().forEach(function(noteKey) {
+            localStorage.removeItem(noteKey);
+        });
     }
 
     return {
         getNotes: getNotes,
         addNote: addNote,
-        deleteNote: deleteNote
+        deleteNote: deleteNote,
+        removeAll: removeAll
     };
 })
 
@@ -255,16 +296,19 @@ angular.module("ionicStarterApp.services", [])
     };
 })
 
-.factory('followStocksService', function() {
+.factory('followStocksService', function(firebaseRef, userService) {
 
-    // var storageKey = 'following-stocks-data';
-    // function getFollowingArray() {
-    //     var followingStocks = [];
-    //     var followingStocksString = localStorage.getItem(storageKey);
-    //     if(followingStocksString)
-    //         followingStocks = JSON.parse(followingStocksString);
-    //     return followingStocks;
-    // }
+    userService.addSignUpListener(function(authData) {
+        var stockList = getStocksArray();
+        firebaseRef.database().ref().child('users').child(authData.uid).child('stocks').set(stockList);
+    });
+
+    function updateUserStockList(stockList) {
+        if(userService.getCurrentUser().isAuthenticated) {
+            firebaseRef.database().ref().child('users').child(userService.getCurrentUser().data.uid)
+                .child('stocks').set(stockList);
+        }
+    }
 
     var storageKey = 'initial-stocks-data';
     function getStocksArray() {
@@ -293,6 +337,7 @@ angular.module("ionicStarterApp.services", [])
         var followingStocks = getStocksArray();
         followingStocks.push({ ticker: ticker.toUpperCase() });
         localStorage.setItem(storageKey, JSON.stringify(followingStocks));
+        updateUserStockList(followingStocks);
     }
 
     function unfollow(ticker) {
@@ -304,6 +349,7 @@ angular.module("ionicStarterApp.services", [])
             }
         }
         localStorage.setItem(storageKey, JSON.stringify(followingStocks));
+        updateUserStockList(followingStocks);
     }
 
     function isFollowed(ticker) {
@@ -316,11 +362,16 @@ angular.module("ionicStarterApp.services", [])
         return false;
     }
 
+    function removeAll() {
+        localStorage.removeItem(storageKey);
+    }
+
     return {
         getStocksArray: getStocksArray,
         follow: follow,
         unfollow: unfollow,
-        isFollowed: isFollowed
+        isFollowed: isFollowed,
+        removeAll: removeAll
     }
 })
 
@@ -366,19 +417,54 @@ angular.module("ionicStarterApp.services", [])
     }
 
     function signup(user) {
-        return firebaseRef.auth().createUserWithEmailAndPassword(user.email, user.password);
+        return firebaseRef.auth().createUserWithEmailAndPassword(user.email, user.password).then(
+            function(authData) {
+                firebaseRef.database().ref().child('emails').push(user.email);
+                fireSignUp(authData);
+            }
+        );
     }
 
     function login(user) {
-        return firebaseRef.auth().signInWithEmailAndPassword(user.email, user.password);
+        return firebaseRef.auth().signInWithEmailAndPassword(user.email, user.password).then(
+            function(authData) {
+                fireLogIn(authData);
+            }
+        );
     }
 
     function logout() {
-        return firebaseRef.auth().signOut();
+        return firebaseRef.auth().signOut().then(
+            function() {
+                fireLogOut(null);
+            }
+        );
     }
 
     function onAuthStateChanged(authCallback) {
         firebaseRef.auth().onAuthStateChanged(authCallback);
+    }
+
+    var _onSignUpCallbacks = [];
+    var _onLogInCallbacks = [];
+    var _onLogOutCallbacks = [];
+    function fireSignUp(authData) { fireCallbacks(_onSignUpCallbacks, authData); }
+    function fireLogIn(authData) { fireCallbacks(_onLogInCallbacks, authData); }
+    function fireLogOut(authData) { fireCallbacks(_onLogOutCallbacks, authData); }
+    function fireCallbacks(callbackArray, authData) {
+        callbackArray.forEach(function(callback) {
+            callback(authData);
+        });
+    }
+    function addSignUpListener(callback) {
+        _onSignUpCallbacks.push(callback);
+    }
+    function addLogInListener(callback) {
+        console.log('OnLogIn wired');
+        _onLogInCallbacks.push(callback);
+    }
+    function addLogOutListener(callback) {
+        _onLogOutCallbacks.push(callback);
     }
 
     return {
@@ -386,7 +472,10 @@ angular.module("ionicStarterApp.services", [])
         login: login,
         logout: logout,
         getCurrentUser: getCurrentUser,
-        onAuthStateChanged: onAuthStateChanged
+        onAuthStateChanged: onAuthStateChanged,
+        addSignUpListener: addSignUpListener,
+        addLogInListener: addLogInListener,
+        addLogOutListener: addLogOutListener
     }
 })
 ;

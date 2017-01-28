@@ -1,6 +1,6 @@
 angular.module('ionicStarterApp.controllers', [])
 
-.controller('mainController', function($scope, $rootScope, modalService, userService) {
+.controller('mainController', function($scope, $rootScope, $window, modalService, userService, notesService, followStocksService) {
   $scope.modalService = modalService;
 
   $rootScope.currentUser = {
@@ -32,6 +32,11 @@ angular.module('ionicStarterApp.controllers', [])
         $rootScope.$apply(function() {
           $rootScope.currentUser = userService.getCurrentUser();
         });
+
+        notesService.removeAll();
+        followStocksService.removeAll();
+        $window.location.reload(true);
+
     }).catch(function(error) {
         console.log("Sign out error: " + error);
         var currentUser = userService.getCurrentUser();
