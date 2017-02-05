@@ -1,4 +1,4 @@
-# ionic-starter-app
+﻿# ionic-starter-app
 
 ## Some hipster gibberish here
 
@@ -12,3 +12,6 @@ Shoreditch craft beer try-hard franzen. Literally kickstarter scenester succulen
 
 ## Obi wanny huyobi
 Saka deripasca mota mucho hambre pidaras ajuelos. Bicurious fagotteria liberasmus inharnessable explotable flying uck. Pizdets vsemulum huipsum.
+
+### Copyright
+2017 Hipsters Inc.
